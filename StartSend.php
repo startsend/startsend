@@ -4,7 +4,7 @@ class StartSend
 {
     private $token;
     private $API_URL = "https://app.startsend.ru/api/v1/";
-
+    
     /**
      * $token - API ключ
      */

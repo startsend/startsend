@@ -10,8 +10,6 @@ $token = ''; // КОД_ВАШЕГО_ТОКЕНА
 // Номер телефона для теста
 $phone = ''; // НОМЕР ТЕЛ ДЛЯ ТЕСТА
 
-
-
 $text    = "Заглавная буква в начале текста";
 $comment = "Пример работы транслитерации строки. \"$text\" ";
 $translit = Transliterate::getTransliteration($text);
@@ -41,18 +39,21 @@ $res = $sms->getBalance();
 _echo("Получаем баланс:","Баланс: " . $res->result[0]->balance . " ". $res->currency);
 
 
-if(false)
+if(true)
 {
-    _echo("Отправка простого sms-сообщения на номер: $phone");
+    $message = 'Привет от StartSend.ru!';
+    _echo("Отправка sms-сообщения '$message' на номер: $phone");
     /** Отправка простого сообщения: */
     $sms = new StartSend($token);
-    $res = $sms->createSMSMessage('Моё сообщение');
+    $res = $sms->createSMSMessage($message);
     $message_id = $res->message_id;
-    $res2 = $sms->sendSms($message_id, $phone);
-    if ($res2 == false) {
+
+    $res = $sms->sendSms($message_id, $phone);
+
+    if ($res == false) {
         _echo ("Во время отправки сообщения произошла ошибка" );
     } else {
-        _echo ("Сообщение успешно отправлено, его ID: {$res2->sms_id}");
+        _echo ("Сообщение успешно отправлено, его ID: {$res->sms_id}");
     }
 }
 
@@ -85,7 +86,7 @@ if (false)
   echo "</pre>";
 }
 
-if (true)
+if (false)
 {
   /**  Получение списка Альфа-имен с ID */
   $sms = new StartSend($token);
@@ -97,9 +98,9 @@ if (true)
 
 
 
-if (true)
+if (false)
 {
-  /**  Получение ID Афьфа имени */
+  /**  Получение ID Альфа имени */
   $sms = new StartSend($token);
   $name = '0'; // Ваше Альфа-имя
   $alphaNameId = $sms->getAlphaNameId($name);

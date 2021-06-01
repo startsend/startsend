@@ -3,8 +3,8 @@
   require_once('Transliterate.php');
   require_once('CountSmsParts.php');
 
-  $token = 'd455c1343595fa84974af4fbd5992bc5';  // Код токена вы можете получить здесь: https://app.startsend.ru/user-api/token
-  $phone = '375292569528';  // Номер телефона для теста
+  $token = '';  // Код токена вы можете получить здесь: https://app.startsend.ru/user-api/token
+  $phone = '';  // Номер телефона для теста
 
 
   $text    = "Заглавная буква в начале текста";

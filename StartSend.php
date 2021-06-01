@@ -1,10 +1,9 @@
 <?php
-
 class StartSend
 {
     private $token;
     private $API_URL = "https://app.startsend.ru/api/v1/";
-    
+
     /**
      * $token - API ключ
      */
@@ -23,26 +22,40 @@ class StartSend
      * Если команда обработана неуспешно - передаёт ошибку методу error() и возвращает false.
      * $command - команда API
      * $params - ассоциативный массив, ключи которого являются названиями параметров команды кроме token, значения - их значениями.
-     * token в $params передавать не нужно.
      * Необязательный параметр, так как для таких команд, как getLimit, getMessagesList, getPasswordObjects никаких параметров передавать не нужно.
+     * token в $params передавать не нужно.
+     * $method - метод запроса, может быть 'get' или 'post'
      */
-    private function sendRequest($command, $params = array())
+    private function sendRequest($command, $params = array(), $method = 'get')
     {
-        $url = $this->API_URL . $command . '?token=' . $this->token;
-        if (!empty($params)) {
-            foreach ($params as $k => $v)
-                $url .= '&' . $k . '=' . urlencode($v);
+        if ($method=='get') {
+            $url = $this->API_URL . $command . '?token=' . $this->token;
+            if (!empty($params)) {
+                foreach ($params as $k => $v)
+                    $url .= '&' . $k . '=' . urlencode($v);
+            }
+        }
+        else {
+            $url = $this->API_URL . $command;
         }
         $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+        if ($method=='post') {
+          $params['token'] = $this->token;
+          curl_setopt($ch, CURLOPT_POST, 1);
+          curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+        }
         $result = curl_exec($ch);
         curl_close($ch);
         $result = json_decode($result);
         if (isset($result->error)) {
             $this->error($result->error);
             return false;
-        } else
+        }
+        else
             return $result;
     }
 
@@ -54,6 +67,14 @@ class StartSend
     private function error($error)
     {
         trigger_error("<b>StartSend error:</b> $error");
+    }
+
+    /**
+     * Метод-обёртка для команды getBalance
+     */
+    public function getBalance()
+    {
+        return $this->sendRequest("getBalance");
     }
 
     /**
@@ -205,20 +226,37 @@ class StartSend
         return $this->sendRequest('getAlphanameId', $params);
     }
 
-
-    /*
-        Метод возращает латиницу по русскому тексту из параметра $string
-
-    */
-
-
-
-    public function getBalance ()
+    /**
+     * Метод-обёртка для команды flashCall
+     * $phone - номер телефона в формате 375291234567
+     * $code - код подтверждения, если не указан сгенерируется автоматически
+     * $attempt - количество попыток для подтверждения кода, если не указано то 3
+     * $time_valid - время действия кода подтверждения в секундах, если не указано то 90
+     */
+    public function flashCall($phone, $code = '', $attempt = 0, $time_valid = 0)
     {
-        return $this->sendRequest("getBalance");
-
+        $params['phone'] = $phone;
+        if (!empty($code))
+            $params['code'] = $code;
+        if (!empty($attempt))
+            $params['attempt'] = (integer)$attempt;
+        if (!empty($time_valid))
+            $params['time_valid'] = (integer)$time_valid;
+        return $this->sendRequest('flashCall', $params, 'post');
     }
 
-
+    /**
+     * Метод-обёртка для команды confirmFlashCall
+     * $phone - номер телефона в формате 375291234567
+     * $code - код подтверждения
+     * $fclid - значение fclid из метода flashCall
+     */
+    public function confirmFlashCall($phone, $code, $fclid)
+    {
+        $params['phone'] = $phone;
+        $params['code'] = $code;
+        $params['fclid'] = $fclid;
+        return $this->sendRequest('confirmFlashCall', $params, 'post');
+    }
 
 }
